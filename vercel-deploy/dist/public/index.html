@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#22c55e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Kalkulator" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Kalkulator" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icon-192.png" />
+    <title>Kalkulator Potrzeby Wsparcia</title>
+    <meta name="description" content="Aplikacja do oceny poziomu potrzeby wsparcia osoby niepełnosprawnej zgodnie z rozporządzeniem Ministra Rodziny i Polityki Społecznej z 2023 roku." />
+    
+    <!-- Silent keep-alive functionality -->
+    <script>
+      (function() {
+        let lastActivity = Date.now();
+        
+        // Clear any cache/cookies issues on start
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            names.forEach(function(name) {
+              if (name.includes('vite') || name.includes('dev')) {
+                caches.delete(name);
+              }
+            });
+          });
+        }
+        
+        // Track user activity
+        function trackActivity() {
+          lastActivity = Date.now();
+        }
+        
+        // Monitor for user input
+        document.addEventListener('DOMContentLoaded', function() {
+          ['input', 'change', 'click', 'keydown', 'scroll', 'mousemove'].forEach(event => {
+            document.addEventListener(event, trackActivity);
+          });
+        });
+        
+        function silentKeepAlive() {
+          const now = Date.now();
+          const timeSinceActivity = now - lastActivity;
+          
+          // Only ping server if user inactive for 5+ minutes
+          if (timeSinceActivity > 300000) {
+            fetch('/health', {
+              cache: 'no-store',
+              headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+              }
+            })
+              .then(response => response.json())
+              .then(data => console.log('Keep-alive:', data.timestamp))
+              .catch(error => {
+                console.warn('Keep-alive failed (silent):', error);
+                // Never auto-reload, just log
+              });
+          }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+          // Start after 2 minutes, then every 4 minutes
+          setTimeout(silentKeepAlive, 2 * 60 * 1000);
+          setInterval(silentKeepAlive, 4 * 60 * 1000);
+        });
+        
+        document.addEventListener('visibilitychange', function() {
+          if (!document.hidden) {
+            const timeSinceActivity = Date.now() - lastActivity;
+            if (timeSinceActivity > 300000) silentKeepAlive();
+          }
+        });
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-DTGcO7TS.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CllHixQc.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="/install.js"></script>
+    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
+    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
+  </body>
+</html>
